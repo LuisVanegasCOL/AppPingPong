@@ -6,11 +6,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from 'react-native-paper';
-import { authService } from '../api/authService';
 import { RootStackParamList, MainTabParamList } from './types';
 
 // Screens
-import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import PlayersScreen from '../screens/PlayersScreen';
 import TournamentScreen from '../screens/TournamentScreen';
@@ -161,8 +159,6 @@ const MainTabs = () => {
 };
 
 const AppNavigator = () => {
-  const isAuthenticated = authService.isAuthenticated();
-
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -170,11 +166,7 @@ const AppNavigator = () => {
           headerShown: false,
         }}
       >
-        {!isAuthenticated ? (
-          <Stack.Screen name="Login" component={LoginScreen} />
-        ) : (
-          <Stack.Screen name="MainTabs" component={MainTabs} />
-        )}
+        <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="AddMatch" component={AddMatchScreen} />
       </Stack.Navigator>
     </NavigationContainer>
