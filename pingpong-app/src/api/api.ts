@@ -7,7 +7,7 @@ import { authService } from './authService';
 export const API_URL = Platform.select({
   android: 'http://10.0.2.2:8080', // Para el emulador de Android
   ios: 'http://localhost:8080',    // Para el simulador de iOS
-  default: 'http://localhost:8080' // Para desarrollo web
+  default: 'https://pingpong-backend-production.up.railway.app' // Para producción en Railway
 });
 
 // Crear instancia de axios con la configuración base
