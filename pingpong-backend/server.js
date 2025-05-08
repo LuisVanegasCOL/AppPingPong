@@ -10,31 +10,48 @@ const port = process.env.PORT || 8080;
 
 // Configuración de la conexión a MySQL
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '1616',
-  database: process.env.DB_NAME || 'pingpong_db',
-  port: process.env.DB_PORT || 3306,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
   connectTimeout: 10000, // 10 segundos
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Verificar la conexión
 pool.getConnection()
   .then(connection => {
-    console.log('✅ Conexión exitosa con MySQL');
+    console.log('\n🚀 ===========================================');
+    console.log('📡 Estado de la conexión:');
+    console.log('✅ Conexión exitosa con MySQL en Railway');
+    console.log(`📊 Base de datos: ${process.env.DB_NAME}`);
+    console.log(`🌐 Host: ${process.env.DB_HOST}`);
+    console.log(`🔌 Puerto: ${process.env.DB_PORT}`);
+    console.log('===========================================\n');
     connection.release();
   })
   .catch(err => {
-    console.error('❌ Error al conectar con MySQL:', err);
+    console.error('\n❌ ===========================================');
+    console.error('❌ Error al conectar con MySQL en Railway:');
+    console.error('❌ Detalles del error:', err.message);
+    console.error('===========================================\n');
     process.exit(1);
   });
 
 // Middleware CORS
 app.use(cors({
-  origin: ['http://localhost:19006', 'http://localhost:19000', 'http://localhost:3000'],
+  origin: [
+    'http://localhost:19006', 
+    'http://localhost:19000', 
+    'http://localhost:3000',
+    'https://luisvanegascol.github.io'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -658,39 +675,63 @@ const startServer = async () => {
   try {
     // Verificar la conexión a la base de datos primero
     const connection = await pool.getConnection();
-    console.log('✅ Conexión exitosa con MySQL');
+    console.log('\n🚀 ===========================================');
+    console.log('📡 Estado de la conexión:');
+    console.log('✅ Conexión exitosa con MySQL en Railway');
+    console.log(`📊 Base de datos: ${process.env.DB_NAME}`);
+    console.log(`🌐 Host: ${process.env.DB_HOST}`);
+    console.log(`🔌 Puerto: ${process.env.DB_PORT}`);
+    console.log('===========================================\n');
     connection.release();
 
     // Iniciar el servidor Express
     const server = app.listen(port, '0.0.0.0', () => {
       const host = server.address();
-      console.log(`🚀 Servidor corriendo en http://${host.address}:${host.port}`);
-      console.log('✅ Prueba el servidor visitando: http://localhost:8080/test');
+      console.log('\n🚀 ===========================================');
+      console.log('📡 Estado del servidor:');
+      console.log(`✅ Servidor corriendo en http://${host.address}:${host.port}`);
+      console.log('📝 Endpoints disponibles:');
+      console.log('   • http://localhost:8080/test');
+      console.log('   • http://localhost:8080/players');
+      console.log('   • http://localhost:8080/matches');
+      console.log('   • http://localhost:8080/torneos');
+      console.log('===========================================\n');
     });
 
     // Manejar errores del servidor
     server.on('error', (error) => {
+      console.error('\n❌ ===========================================');
       if (error.code === 'EADDRINUSE') {
         console.error(`❌ El puerto ${port} ya está en uso`);
       } else {
-        console.error('❌ Error en el servidor:', error);
+        console.error('❌ Error en el servidor:', error.message);
       }
+      console.error('===========================================\n');
       process.exit(1);
     });
 
   } catch (err) {
-    console.error('❌ Error al iniciar el servidor:', err);
+    console.error('\n❌ ===========================================');
+    console.error('❌ Error al iniciar el servidor:');
+    console.error('❌ Detalles del error:', err.message);
+    console.error('===========================================\n');
     process.exit(1);
   }
 };
 
 // Manejar errores no capturados
 process.on('unhandledRejection', (err) => {
-  console.error('❌ Error no manejado:', err);
+  console.error('\n❌ ===========================================');
+  console.error('❌ Error no manejado:');
+  console.error('❌ Detalles del error:', err.message);
+  console.error('===========================================\n');
 });
 
 process.on('uncaughtException', (err) => {
-  console.error('❌ Excepción no capturada:', err);
+  console.error('\n❌ ===========================================');
+  console.error('❌ Excepción no capturada:');
+  console.error('❌ Detalles del error:', err.message);
+  console.error('===========================================\n');
 });
 
 // Iniciar el servidor
