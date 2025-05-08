@@ -1,0 +1,1261 @@
+GUÍA PARA CREAR UNA APLICACIÓN DE PING PONG
+=========================================
+
+EXPLICACIÓN DETALLADA DE CADA SECCIÓN
+====================================
+
+1. REQUISITOS PREVIOS
+---------------------
+IDEA: Preparar todo lo necesario antes de comenzar el desarrollo.
+PROCESO: 
+- Instalar Node.js para ejecutar JavaScript en el servidor
+- Instalar npm o yarn para gestionar paquetes
+- Configurar PostgreSQL para la base de datos
+- Crear cuentas en Railway y Vercel para el despliegue
+RESULTADO: Un entorno de desarrollo completo y listo para comenzar.
+
+- Node.js (versión 14 o superior)
+- npm o yarn
+- PostgreSQL
+- Git
+- Cuenta en Railway (para el backend)
+- Cuenta en Vercel (para el frontend)
+
+EJEMPLOS PRÁCTICOS POR SECCIÓN
+=============================
+
+1. REQUISITOS PREVIOS
+---------------------
+EJEMPLO PRÁCTICO:
+```bash
+# Verificar instalación de Node.js
+node --version
+# Debería mostrar v14.x.x o superior
+
+# Verificar instalación de npm
+npm --version
+# Debería mostrar 6.x.x o superior
+
+# Verificar instalación de PostgreSQL
+psql --version
+# Debería mostrar 12.x o superior
+```
+
+2. ESTRUCTURA DEL PROYECTO
+-------------------------
+IDEA: Organizar el código de manera clara y mantenible.
+PROCESO:
+- Separar el frontend (interfaz de usuario) del backend (servidor)
+- Crear carpetas específicas para cada tipo de archivo
+- Establecer una jerarquía clara de componentes
+RESULTADO: Un proyecto organizado y fácil de mantener.
+
+El proyecto está dividido en dos partes principales:
+- Frontend (pingpong-app): Aplicación React Native/Expo
+- Backend (pingpong-backend): Servidor Node.js con Express
+
+EJEMPLO PRÁCTICO:
+```bash
+# Estructura de carpetas recomendada
+pingpong-app/
+├── src/
+│   ├── components/
+│   │   ├── MatchCard.tsx
+│   │   └── PlayerStats.tsx
+│   ├── screens/
+│   │   ├── HomeScreen.tsx
+│   │   └── ProfileScreen.tsx
+│   └── utils/
+│       └── api.ts
+└── package.json
+
+pingpong-backend/
+├── routes/
+│   ├── matches.js
+│   └── users.js
+├── config/
+│   └── database.js
+└── server.js
+```
+
+3. CONFIGURACIÓN DEL BACKEND
+---------------------------
+IDEA: Crear el servidor que manejará la lógica de la aplicación.
+PROCESO:
+- Inicializar un proyecto Node.js
+- Instalar las dependencias necesarias
+- Configurar la base de datos
+- Crear las tablas necesarias
+RESULTADO: Un servidor funcional que puede manejar peticiones y almacenar datos.
+
+a) Crear el proyecto:
+```bash
+mkdir pingpong-backend
+cd pingpong-backend
+npm init -y
+```
+
+b) Instalar dependencias necesarias:
+```bash
+npm install express pg bcrypt jsonwebtoken cors dotenv
+```
+
+c) Estructura de archivos del backend:
+- server.js (servidor principal)
+- auth.js (autenticación)
+- config/ (configuraciones)
+- routes/ (rutas de la API)
+- schema.sql (esquema de la base de datos)
+
+d) Configuración de la base de datos:
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    is_admin BOOLEAN DEFAULT false
+);
+
+CREATE TABLE matches (
+    id SERIAL PRIMARY KEY,
+    player1_id INTEGER REFERENCES users(id),
+    player2_id INTEGER REFERENCES users(id),
+    score1 INTEGER,
+    score2 INTEGER,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+EJEMPLO PRÁCTICO:
+```javascript
+// server.js
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(express.json());
+
+// Ejemplo de ruta básica
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date() });
+});
+
+app.listen(port, () => {
+    console.log(`Servidor corriendo en puerto ${port}`);
+});
+```
+
+4. CONFIGURACIÓN DEL FRONTEND
+----------------------------
+IDEA: Crear la interfaz de usuario que verán los jugadores.
+PROCESO:
+- Crear un proyecto con Expo
+- Instalar componentes de UI
+- Organizar las pantallas y componentes
+RESULTADO: Una aplicación móvil con una interfaz atractiva y funcional.
+
+a) Crear el proyecto con Expo:
+```bash
+npx create-expo-app pingpong-app
+cd pingpong-app
+```
+
+b) Instalar dependencias:
+```bash
+npm install @react-navigation/native @react-navigation/stack axios react-native-paper
+```
+
+c) Estructura de archivos del frontend:
+- src/
+  - components/
+  - screens/
+  - utils/
+  - types/
+- App.tsx
+- app.json
+
+EJEMPLO PRÁCTICO:
+```typescript
+// App.tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+const Stack = createStackNavigator();
+
+export default function App() {
+    return (
+        <NavigationContainer>
+            <Stack.Navigator>
+                <Stack.Screen 
+                    name="Home" 
+                    component={HomeScreen}
+                    options={{ title: 'Ping Pong App' }}
+                />
+            </Stack.Navigator>
+        </NavigationContainer>
+    );
+}
+```
+
+5. FUNCIONALIDADES PRINCIPALES
+-----------------------------
+IDEA: Implementar las características core de la aplicación.
+PROCESO:
+- Desarrollar el sistema de autenticación
+- Crear la gestión de partidos
+- Implementar el sistema de rankings
+RESULTADO: Una aplicación completamente funcional con todas sus características principales.
+
+a) Autenticación:
+- Registro de usuarios
+- Inicio de sesión
+- Recuperación de contraseña
+
+b) Gestión de Partidos:
+- Crear partidos
+- Registrar resultados
+- Ver historial de partidos
+
+c) Sistema de Rankings:
+- Cálculo de ELO
+- Tabla de clasificación
+- Estadísticas de jugadores
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de registro de usuario
+const registerUser = async (username: string, password: string) => {
+    try {
+        const response = await fetch('http://localhost:3000/api/users/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password }),
+        });
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error en registro:', error);
+    }
+};
+```
+
+6. PASOS PARA IMPLEMENTACIÓN
+---------------------------
+IDEA: Guiar el proceso de desarrollo paso a paso.
+PROCESO:
+- Seguir un orden lógico de implementación
+- Probar cada funcionalidad
+- Conectar frontend y backend
+RESULTADO: Una aplicación completamente funcional y probada.
+
+1. Configurar la base de datos PostgreSQL
+2. Implementar el backend con Express
+3. Crear las rutas de la API
+4. Implementar la autenticación
+5. Desarrollar el frontend con React Native
+6. Conectar frontend y backend
+7. Implementar el sistema de rankings
+8. Realizar pruebas
+9. Desplegar en Railway (backend) y Vercel (frontend)
+
+EJEMPLO PRÁCTICO:
+```javascript
+// Ejemplo de implementación de una ruta de API
+// routes/matches.js
+router.post('/matches', async (req, res) => {
+    const { player1, player2, score1, score2 } = req.body;
+    
+    try {
+        // 1. Validar datos
+        if (!player1 || !player2) {
+            return res.status(400).json({ error: 'Faltan jugadores' });
+        }
+
+        // 2. Guardar en base de datos
+        const match = await db.matches.create({
+            player1,
+            player2,
+            score1,
+            score2,
+            date: new Date()
+        });
+
+        // 3. Actualizar rankings
+        await updateRankings(match);
+
+        // 4. Responder
+        res.status(201).json(match);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+```
+
+7. CONCEPTOS IMPORTANTES
+-----------------------
+IDEA: Entender las tecnologías y conceptos clave.
+PROCESO:
+- Aprender sobre JWT para seguridad
+- Entender el sistema ELO
+- Comprender las APIs REST
+RESULTADO: Conocimiento sólido de las tecnologías utilizadas.
+
+- JWT (JSON Web Tokens) para autenticación
+- Sistema de ELO para rankings
+- RESTful API
+- React Navigation para navegación
+- React Native Paper para UI
+- PostgreSQL para base de datos
+- Express.js para el servidor
+
+EJEMPLO PRÁCTICO:
+```javascript
+// Ejemplo de autenticación con JWT
+const login = async (username, password) => {
+    // 1. Verificar credenciales
+    const user = await db.users.findOne({ username });
+    if (!user) throw new Error('Usuario no encontrado');
+
+    // 2. Verificar contraseña
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) throw new Error('Contraseña incorrecta');
+
+    // 3. Generar token
+    const token = jwt.sign(
+        { id: user.id, username: user.username },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+    );
+
+    return { token, user };
+};
+```
+
+8. EJEMPLOS DE CÓDIGO
+---------------------
+IDEA: Proporcionar ejemplos prácticos de implementación.
+PROCESO:
+- Mostrar código real y funcional
+- Explicar cada parte del código
+- Proporcionar ejemplos de uso
+RESULTADO: Referencias claras para implementar funcionalidades.
+
+a) Autenticación (auth.js):
+```javascript
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+
+const generateToken = (user) => {
+    return jwt.sign(
+        { id: user.id, username: user.username },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+    );
+};
+
+const hashPassword = async (password) => {
+    return await bcrypt.hash(password, 10);
+};
+```
+
+b) API de Partidos (routes/matches.js):
+```javascript
+router.post('/matches', async (req, res) => {
+    const { player1_id, player2_id, score1, score2 } = req.body;
+    try {
+        const result = await pool.query(
+            'INSERT INTO matches (player1_id, player2_id, score1, score2) VALUES ($1, $2, $3, $4) RETURNING *',
+            [player1_id, player2_id, score1, score2]
+        );
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+```
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de componente de partido
+interface MatchProps {
+    player1: string;
+    player2: string;
+    score: [number, number];
+    date: Date;
+}
+
+const Match: React.FC<MatchProps> = ({ player1, player2, score, date }) => {
+    return (
+        <View style={styles.matchContainer}>
+            <Text style={styles.players}>
+                {player1} vs {player2}
+            </Text>
+            <Text style={styles.score}>
+                {score[0]} - {score[1]}
+            </Text>
+            <Text style={styles.date}>
+                {new Date(date).toLocaleDateString()}
+            </Text>
+        </View>
+    );
+};
+```
+
+9. DESPLIEGUE
+------------
+IDEA: Hacer la aplicación accesible a los usuarios.
+PROCESO:
+- Preparar el código para producción
+- Configurar los servicios de hosting
+- Realizar el despliegue
+RESULTADO: Una aplicación accesible en internet.
+
+a) Backend (Railway):
+1. Crear cuenta en Railway
+2. Conectar repositorio
+3. Configurar variables de entorno
+4. Desplegar
+
+b) Frontend (Vercel):
+1. Crear cuenta en Vercel
+2. Conectar repositorio
+3. Configurar build settings
+4. Desplegar
+
+EJEMPLO PRÁCTICO:
+```bash
+# Despliegue en Railway
+railway up
+
+# Despliegue en Vercel
+vercel --prod
+
+# Verificar despliegue
+curl https://tu-app.vercel.app/api/health
+```
+
+10. MANTENIMIENTO
+----------------
+IDEA: Mantener la aplicación funcionando correctamente.
+PROCESO:
+- Monitorear errores
+- Realizar backups
+- Actualizar dependencias
+RESULTADO: Una aplicación estable y segura.
+
+- Monitoreo de errores
+- Actualizaciones de seguridad
+- Backups de la base de datos
+- Optimización de rendimiento
+
+EJEMPLO PRÁCTICO:
+```javascript
+// Ejemplo de script de backup
+const backup = async () => {
+    const timestamp = new Date().toISOString();
+    const filename = `backup-${timestamp}.sql`;
+    
+    try {
+        // 1. Realizar backup
+        await exec(`pg_dump -U postgres pingpong > ${filename}`);
+        
+        // 2. Subir a almacenamiento
+        await uploadToStorage(filename);
+        
+        // 3. Limpiar backups antiguos
+        await cleanupOldBackups();
+        
+        console.log('Backup completado exitosamente');
+    } catch (error) {
+        console.error('Error en backup:', error);
+    }
+};
+```
+
+11. RECURSOS ADICIONALES
+-----------------------
+IDEA: Proporcionar fuentes de información adicional.
+PROCESO:
+- Compilar documentación relevante
+- Incluir enlaces útiles
+- Sugerir recursos de aprendizaje
+RESULTADO: Acceso a información complementaria.
+
+- Documentación de React Native: https://reactnative.dev/
+- Documentación de Express: https://expressjs.com/
+- Documentación de PostgreSQL: https://www.postgresql.org/docs/
+- Documentación de Railway: https://railway.app/
+- Documentación de Vercel: https://vercel.com/docs
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de uso de documentación
+import { Button } from 'react-native-paper';
+
+// Documentación de componente
+/**
+ * @component MatchButton
+ * @description Botón para iniciar un nuevo partido
+ * @param {string} onPress - Función a ejecutar al presionar
+ * @param {string} label - Texto del botón
+ * @example
+ * <MatchButton 
+ *   onPress={() => startMatch()} 
+ *   label="Nuevo Partido" 
+ * />
+ */
+const MatchButton: React.FC<MatchButtonProps> = ({ onPress, label }) => {
+    return (
+        <Button 
+            mode="contained" 
+            onPress={onPress}
+            style={styles.button}
+        >
+            {label}
+        </Button>
+    );
+};
+```
+
+12. CONSEJOS DE DESARROLLO
+-------------------------
+IDEA: Compartir mejores prácticas y recomendaciones.
+PROCESO:
+- Sugerir herramientas y técnicas
+- Recomendar prácticas de seguridad
+- Proponer metodologías de trabajo
+RESULTADO: Desarrollo más eficiente y seguro.
+
+- Usar TypeScript para mejor mantenibilidad
+- Implementar pruebas unitarias
+- Seguir las mejores prácticas de seguridad
+- Mantener un código limpio y documentado
+- Usar control de versiones (Git)
+- Implementar CI/CD
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de buenas prácticas
+// 1. Usar TypeScript
+interface User {
+    id: number;
+    username: string;
+    email: string;
+}
+
+// 2. Implementar pruebas
+describe('User Service', () => {
+    test('should create new user', async () => {
+        const user = await createUser({
+            username: 'test',
+            email: 'test@test.com'
+        });
+        expect(user).toHaveProperty('id');
+    });
+});
+
+// 3. Manejar errores
+try {
+    await riskyOperation();
+} catch (error) {
+    logger.error('Error en operación:', error);
+    throw new CustomError('Operación fallida');
+}
+```
+
+13. ESTRUCTURA DETALLADA DE COMPONENTES
+-------------------------------------
+IDEA: Mostrar cómo construir la interfaz de usuario.
+PROCESO:
+- Crear componentes reutilizables
+- Implementar pantallas principales
+- Conectar componentes con datos
+RESULTADO: Una interfaz de usuario modular y mantenible.
+
+a) Componentes del Frontend:
+```typescript
+// src/components/MatchCard.tsx
+interface MatchCardProps {
+    player1: string;
+    player2: string;
+    score1: number;
+    score2: number;
+    date: string;
+}
+
+const MatchCard: React.FC<MatchCardProps> = ({ player1, player2, score1, score2, date }) => {
+    return (
+        <Card style={styles.card}>
+            <Card.Content>
+                <Text>{player1} vs {player2}</Text>
+                <Text>Score: {score1} - {score2}</Text>
+                <Text>Date: {date}</Text>
+            </Card.Content>
+        </Card>
+    );
+};
+```
+
+b) Pantallas Principales:
+```typescript
+// src/screens/HomeScreen.tsx
+const HomeScreen: React.FC = () => {
+    const [matches, setMatches] = useState<Match[]>([]);
+    
+    useEffect(() => {
+        fetchMatches();
+    }, []);
+
+    return (
+        <View style={styles.container}>
+            <Text style={styles.title}>Últimos Partidos</Text>
+            <FlatList
+                data={matches}
+                renderItem={({ item }) => <MatchCard {...item} />}
+                keyExtractor={item => item.id.toString()}
+            />
+        </View>
+    );
+};
+```
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de componente reutilizable
+const PlayerCard: React.FC<PlayerCardProps> = ({
+    name,
+    ranking,
+    wins,
+    losses
+}) => {
+    return (
+        <Card style={styles.card}>
+            <Card.Content>
+                <Text style={styles.name}>{name}</Text>
+                <Text style={styles.ranking}>Ranking: {ranking}</Text>
+                <View style={styles.stats}>
+                    <Text>Victorias: {wins}</Text>
+                    <Text>Derrotas: {losses}</Text>
+                </View>
+            </Card.Content>
+        </Card>
+    );
+};
+```
+
+14. SISTEMA DE RANKINGS ELO
+--------------------------
+IDEA: Implementar un sistema justo de clasificación.
+PROCESO:
+- Calcular puntuaciones ELO
+- Actualizar rankings
+- Mostrar clasificaciones
+RESULTADO: Un sistema de rankings preciso y justo.
+
+a) Implementación del cálculo ELO:
+```typescript
+// src/utils/eloCalculator.ts
+const K_FACTOR = 32;
+
+export const calculateNewRatings = (
+    player1Rating: number,
+    player2Rating: number,
+    player1Score: number,
+    player2Score: number
+) => {
+    const expectedScore1 = 1 / (1 + Math.pow(10, (player2Rating - player1Rating) / 400));
+    const expectedScore2 = 1 - expectedScore1;
+    
+    const actualScore1 = player1Score > player2Score ? 1 : 0;
+    const actualScore2 = 1 - actualScore1;
+    
+    const newRating1 = player1Rating + K_FACTOR * (actualScore1 - expectedScore1);
+    const newRating2 = player2Rating + K_FACTOR * (actualScore2 - expectedScore2);
+    
+    return { newRating1, newRating2 };
+};
+```
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de cálculo ELO
+const calculateELO = (player1Rating: number, player2Rating: number, winner: 1 | 2) => {
+    const K = 32;
+    const expected1 = 1 / (1 + Math.pow(10, (player2Rating - player1Rating) / 400));
+    const expected2 = 1 - expected1;
+    
+    const actual1 = winner === 1 ? 1 : 0;
+    const actual2 = 1 - actual1;
+    
+    const newRating1 = player1Rating + K * (actual1 - expected1);
+    const newRating2 = player2Rating + K * (actual2 - expected2);
+    
+    return {
+        player1NewRating: Math.round(newRating1),
+        player2NewRating: Math.round(newRating2)
+    };
+};
+```
+
+15. GESTIÓN DE ESTADOS
+---------------------
+IDEA: Manejar datos de la aplicación de forma eficiente.
+PROCESO:
+- Implementar Context API
+- Gestionar estado global
+- Manejar autenticación
+RESULTADO: Una aplicación con gestión de datos eficiente.
+
+a) Contexto de Autenticación:
+```typescript
+// src/context/AuthContext.tsx
+interface AuthContextType {
+    user: User | null;
+    login: (email: string, password: string) => Promise<void>;
+    logout: () => void;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC = ({ children }) => {
+    const [user, setUser] = useState<User | null>(null);
+    
+    const login = async (email: string, password: string) => {
+        // Implementación del login
+    };
+    
+    const logout = () => {
+        setUser(null);
+    };
+    
+    return (
+        <AuthContext.Provider value={{ user, login, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
+```
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de uso de Context
+const MatchContext = createContext<MatchContextType | undefined>(undefined);
+
+export const MatchProvider: React.FC = ({ children }) => {
+    const [matches, setMatches] = useState<Match[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    const addMatch = async (match: NewMatch) => {
+        setLoading(true);
+        try {
+            const newMatch = await api.createMatch(match);
+            setMatches(prev => [...prev, newMatch]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <MatchContext.Provider value={{ matches, loading, addMatch }}>
+            {children}
+        </MatchContext.Provider>
+    );
+};
+```
+
+16. MANEJO DE ERRORES
+--------------------
+IDEA: Gestionar errores de forma elegante.
+PROCESO:
+- Implementar middleware de errores
+- Crear mensajes de error claros
+- Registrar errores para debugging
+RESULTADO: Una aplicación robusta y fácil de depurar.
+
+a) Middleware de Error en Backend:
+```javascript
+// middleware/errorHandler.js
+const errorHandler = (err, req, res, next) => {
+    console.error(err.stack);
+    
+    if (err.name === 'ValidationError') {
+        return res.status(400).json({
+            error: 'Error de validación',
+            details: err.message
+        });
+    }
+    
+    if (err.name === 'UnauthorizedError') {
+        return res.status(401).json({
+            error: 'No autorizado',
+            details: 'Token inválido o expirado'
+        });
+    }
+    
+    res.status(500).json({
+        error: 'Error interno del servidor',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+};
+```
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de manejo de errores en frontend
+const ErrorBoundary: React.FC = ({ children }) => {
+    const [hasError, setHasError] = useState(false);
+    const [error, setError] = useState<Error | null>(null);
+
+    if (hasError) {
+        return (
+            <View style={styles.errorContainer}>
+                <Text style={styles.errorTitle}>¡Ups! Algo salió mal</Text>
+                <Text style={styles.errorMessage}>{error?.message}</Text>
+                <Button onPress={() => setHasError(false)}>
+                    Intentar de nuevo
+                </Button>
+            </View>
+        );
+    }
+
+    return children;
+};
+```
+
+17. TESTING
+----------
+IDEA: Asegurar la calidad del código.
+PROCESO:
+- Escribir pruebas unitarias
+- Realizar pruebas de integración
+- Verificar funcionalidades
+RESULTADO: Código confiable y libre de errores.
+
+a) Pruebas Unitarias:
+```typescript
+// src/utils/__tests__/eloCalculator.test.ts
+describe('ELO Calculator', () => {
+    test('calcula correctamente las nuevas puntuaciones', () => {
+        const result = calculateNewRatings(1500, 1500, 11, 9);
+        expect(result.newRating1).toBeGreaterThan(1500);
+        expect(result.newRating2).toBeLessThan(1500);
+    });
+});
+```
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de pruebas con Jest
+describe('Match Service', () => {
+    beforeEach(() => {
+        // Setup
+    });
+
+    test('should create new match', async () => {
+        const match = {
+            player1: 'John',
+            player2: 'Jane',
+            score1: 11,
+            score2: 9
+        };
+
+        const result = await createMatch(match);
+        expect(result).toHaveProperty('id');
+        expect(result.player1).toBe('John');
+    });
+
+    test('should update rankings after match', async () => {
+        const match = await createMatch({
+            player1: 'John',
+            player2: 'Jane',
+            score1: 11,
+            score2: 9
+        });
+
+        const rankings = await getRankings();
+        expect(rankings).toHaveLength(2);
+    });
+});
+```
+
+18. OPTIMIZACIÓN DE RENDIMIENTO
+------------------------------
+IDEA: Mejorar la velocidad y eficiencia.
+PROCESO:
+- Implementar caché
+- Optimizar consultas
+- Mejorar tiempos de carga
+RESULTADO: Una aplicación rápida y eficiente.
+
+a) Implementación de caché:
+```javascript
+// middleware/cache.js
+const cache = new Map();
+
+const cacheMiddleware = (duration) => {
+    return (req, res, next) => {
+        const key = req.originalUrl;
+        const cachedResponse = cache.get(key);
+        
+        if (cachedResponse) {
+            return res.json(cachedResponse);
+        }
+        
+        res.sendResponse = res.json;
+        res.json = (body) => {
+            cache.set(key, body);
+            setTimeout(() => cache.delete(key), duration);
+            res.sendResponse(body);
+        };
+        
+        next();
+    };
+};
+```
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de memoización
+const MemoizedPlayerList = React.memo(({ players }) => {
+    return (
+        <FlatList
+            data={players}
+            renderItem={({ item }) => (
+                <PlayerCard
+                    key={item.id}
+                    {...item}
+                />
+            )}
+            keyExtractor={item => item.id.toString()}
+        />
+    );
+});
+
+// Ejemplo de lazy loading
+const ProfileScreen = React.lazy(() => import('./screens/ProfileScreen'));
+```
+
+19. SEGURIDAD
+------------
+IDEA: Proteger la aplicación y los datos.
+PROCESO:
+- Configurar CORS
+- Implementar autenticación segura
+- Proteger rutas sensibles
+RESULTADO: Una aplicación segura y protegida.
+
+a) Configuración de CORS:
+```javascript
+// config/cors.js
+const corsOptions = {
+    origin: process.env.FRONTEND_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    maxAge: 86400 // 24 horas
+};
+
+app.use(cors(corsOptions));
+```
+
+EJEMPLO PRÁCTICO:
+```javascript
+// Ejemplo de middleware de seguridad
+const securityMiddleware = (req, res, next) => {
+    // 1. Validar token
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided' });
+    }
+
+    try {
+        // 2. Verificar token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
+};
+```
+
+20. MONITOREO Y LOGGING
+----------------------
+IDEA: Mantener un registro de la actividad.
+PROCESO:
+- Configurar Winston
+- Registrar eventos importantes
+- Monitorear errores
+RESULTADO: Visibilidad completa del funcionamiento.
+
+a) Configuración de Winston:
+```javascript
+// config/logger.js
+const winston = require('winston');
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.json(),
+    transports: [
+        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston.transports.File({ filename: 'combined.log' })
+    ]
+});
+
+if (process.env.NODE_ENV !== 'production') {
+    logger.add(new winston.transports.Console({
+        format: winston.format.simple()
+    }));
+}
+```
+
+EJEMPLO PRÁCTICO:
+```javascript
+// Ejemplo de uso del logger
+logger.info('Nuevo partido creado', { matchId: 123 });
+logger.error('Error al procesar partido', { error: err.message });
+```
+
+21. DOCUMENTACIÓN DE API
+-----------------------
+IDEA: Facilitar el uso de la API.
+PROCESO:
+- Documentar endpoints
+- Crear ejemplos de uso
+- Generar documentación interactiva
+RESULTADO: API fácil de entender y usar.
+
+a) Ejemplo de documentación con Swagger:
+```javascript
+/**
+ * @swagger
+ * /api/matches:
+ *   post:
+ *     summary: Crear nuevo partido
+ *     description: Registra un nuevo partido de ping pong
+ *     parameters:
+ *       - in: body
+ *         name: match
+ *         schema:
+ *           type: object
+ *           required:
+ *             - player1
+ *             - player2
+ *           properties:
+ *             player1:
+ *               type: string
+ *             player2:
+ *               type: string
+ *             score1:
+ *               type: number
+ *             score2:
+ *               type: number
+ *     responses:
+ *       201:
+ *         description: Partido creado exitosamente
+ *       400:
+ *         description: Datos inválidos
+ */
+```
+
+EJEMPLO PRÁCTICO:
+```typescript
+// Ejemplo de uso de Swagger
+const swaggerJsDoc = require('swagger-jsdoc');
+
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'API de Ping Pong',
+            version: '1.0.0',
+            description: 'Documentación de la API de Ping Pong'
+        },
+        servers: [
+            {
+                url: process.env.API_URL
+            }
+        ]
+    },
+    apis: ['./routes/*.js']
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+```
+
+22. CI/CD CON GITHUB ACTIONS
+---------------------------
+IDEA: Automatizar el proceso de desarrollo.
+PROCESO:
+- Configurar pipeline
+- Automatizar pruebas
+- Automatizar despliegue
+RESULTADO: Desarrollo más rápido y confiable.
+
+a) Configuración básica:
+```yaml
+# .github/workflows/main.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        run: npm run deploy
+```
+
+EJEMPLO PRÁCTICO:
+```yaml
+# Ejemplo de workflow de CI/CD
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        run: npm run deploy
+```
+
+23. CONFIGURACIÓN DE ENTORNO
+---------------------------
+IDEA: Gestionar configuraciones de forma segura.
+PROCESO:
+- Definir variables de entorno
+- Separar configuraciones
+- Proteger información sensible
+RESULTADO: Configuración segura y flexible.
+
+a) Variables de entorno (.env):
+```plaintext
+# Backend
+NODE_ENV=development
+PORT=3000
+DATABASE_URL=postgresql://user:password@localhost:5432/pingpong
+JWT_SECRET=your-secret-key
+FRONTEND_URL=http://localhost:19006
+
+# Frontend
+API_URL=http://localhost:3000
+```
+
+EJEMPLO PRÁCTICO:
+```javascript
+// Ejemplo de configuración de entorno
+const config = {
+    development: {
+        apiUrl: 'http://localhost:3000',
+        database: {
+            host: 'localhost',
+            port: 5432,
+            name: 'pingpong_dev'
+        }
+    },
+    production: {
+        apiUrl: process.env.API_URL,
+        database: {
+            host: process.env.DB_HOST,
+            port: process.env.DB_PORT,
+            name: process.env.DB_NAME
+        }
+    }
+}[process.env.NODE_ENV || 'development'];
+```
+
+24. DEPLOYMENT CHECKLIST
+-----------------------
+IDEA: Asegurar un despliegue exitoso.
+PROCESO:
+- Verificar todos los aspectos
+- Realizar pruebas finales
+- Comprobar seguridad
+RESULTADO: Despliegue seguro y confiable.
+
+a) Ejecutar todas las pruebas
+b) Verificar variables de entorno
+c) Realizar backup de la base de datos
+d) Actualizar documentación
+e) Verificar logs de errores
+f) Comprobar métricas de rendimiento
+g) Realizar pruebas de carga
+h) Verificar seguridad
+i) Actualizar versiones de dependencias
+j) Revisar permisos de archivos
+
+EJEMPLO PRÁCTICO:
+```javascript
+// Script de verificación de despliegue
+const deploymentCheck = async () => {
+    const checks = [
+        {
+            name: 'Tests',
+            run: async () => {
+                const result = await runTests();
+                return result.passed;
+            }
+        },
+        {
+            name: 'Database',
+            run: async () => {
+                const connection = await db.connect();
+                return connection.isConnected;
+            }
+        },
+        {
+            name: 'Environment',
+            run: async () => {
+                return process.env.NODE_ENV === 'production';
+            }
+        }
+    ];
+
+    for (const check of checks) {
+        const passed = await check.run();
+        console.log(`${check.name}: ${passed ? '✅' : '❌'}`);
+    }
+};
+```
+
+Esta guía proporciona una explicación detallada de cada sección, ayudando a entender no solo el "qué" sino también el "por qué" y el "cómo" de cada paso en el desarrollo de la aplicación. 
