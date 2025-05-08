@@ -5,8 +5,8 @@ import { authService } from './authService';
 
 // Configuración de la URL base según la plataforma
 export const API_URL = Platform.select({
-  android: 'http://10.0.2.2:8080', // Para el emulador de Android
-  ios: 'http://localhost:8080',    // Para el simulador de iOS
+  android: 'https://apppingpong-production.up.railway.app', // Para el emulador de Android
+  ios: 'https://apppingpong-production.up.railway.app',    // Para el simulador de iOS
   default: 'https://apppingpong-production.up.railway.app' // Para producción en Railway
 });
 
