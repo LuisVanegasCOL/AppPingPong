@@ -55,10 +55,11 @@ app.use(cors({
     'http://localhost:19006', 
     'http://localhost:19000', 
     'http://localhost:3000',
-    'https://luisvanegascol.github.io'
+    'https://luisvanegascol.github.io',
+    'https://apppingpong-production.up.railway.app'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type'],
   credentials: true
 }));
 
