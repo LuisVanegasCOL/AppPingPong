@@ -671,8 +671,8 @@ app.delete('/rankings/:id', authenticateToken, async (req, res) => {
 });
 
 // Iniciar el servidor
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`\n🚀 Servidor iniciado en el puerto ${port}`);
-  console.log(`📡 URL: http://localhost:${port}`);
+  console.log(`📡 URL: http://0.0.0.0:${port}`);
   console.log('===========================================\n');
 }); 
