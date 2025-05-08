@@ -3,12 +3,11 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from './authService';
 
+// URL base de la API
+const RAILWAY_URL = 'https://apppingpong-production.up.railway.app';
+
 // Configuración de la URL base según la plataforma
-export const API_URL = Platform.select({
-  android: 'https://apppingpong-production.up.railway.app', // Para el emulador de Android
-  ios: 'https://apppingpong-production.up.railway.app',    // Para el simulador de iOS
-  default: 'https://apppingpong-production.up.railway.app' // Para producción en Railway
-});
+export const API_URL = RAILWAY_URL;
 
 // Crear instancia de axios con la configuración base
 export const api = axios.create({
