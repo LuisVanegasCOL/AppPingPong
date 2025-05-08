@@ -682,6 +682,11 @@ const startServer = async () => {
     console.log('📡 Iniciando servidor...');
     console.log(`🔌 Puerto: ${port}`);
     console.log(`🌐 Entorno: ${process.env.NODE_ENV || 'development'}`);
+    console.log('📊 Variables de entorno:');
+    console.log(`   DB_HOST: ${process.env.DB_HOST || 'no definido'}`);
+    console.log(`   DB_USER: ${process.env.DB_USER || 'no definido'}`);
+    console.log(`   DB_NAME: ${process.env.DB_NAME || 'no definido'}`);
+    console.log(`   DB_PORT: ${process.env.DB_PORT || 'no definido'}`);
     console.log('===========================================\n');
 
     // Verificar la conexión a la base de datos primero
@@ -703,6 +708,11 @@ const startServer = async () => {
     console.error('❌ Error al iniciar el servidor:');
     console.error('❌ Detalles del error:', err.message);
     console.error('❌ Stack trace:', err.stack);
+    console.error('❌ Variables de entorno:');
+    console.error('   DB_HOST:', process.env.DB_HOST);
+    console.error('   DB_USER:', process.env.DB_USER);
+    console.error('   DB_NAME:', process.env.DB_NAME);
+    console.error('   DB_PORT:', process.env.DB_PORT);
     console.error('===========================================\n');
     process.exit(1);
   }
