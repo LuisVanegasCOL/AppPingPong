@@ -10,11 +10,11 @@ const port = process.env.PORT || 8080;
 
 // Configuración de la conexión a MySQL
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
+  host: process.env.DB_HOST || 'metro.proxy.rlwy.net',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'oqGbovQrXwNXmirvhLxacWSbKsdNFtty',
+  database: process.env.DB_NAME || 'railway',
+  port: process.env.DB_PORT || 53902,
   connectTimeout: 10000, // 10 segundos
   waitForConnections: true,
   connectionLimit: 10,
@@ -30,9 +30,9 @@ pool.getConnection()
     console.log('\n🚀 ===========================================');
     console.log('📡 Estado de la conexión:');
     console.log('✅ Conexión exitosa con MySQL en Railway');
-    console.log(`📊 Base de datos: ${process.env.DB_NAME}`);
-    console.log(`🌐 Host: ${process.env.DB_HOST}`);
-    console.log(`🔌 Puerto: ${process.env.DB_PORT}`);
+    console.log(`📊 Base de datos: ${process.env.DB_NAME || 'railway'}`);
+    console.log(`🌐 Host: ${process.env.DB_HOST || 'metro.proxy.rlwy.net'}`);
+    console.log(`🔌 Puerto: ${process.env.DB_PORT || 53902}`);
     console.log('===========================================\n');
     connection.release();
   })
@@ -40,6 +40,11 @@ pool.getConnection()
     console.error('\n❌ ===========================================');
     console.error('❌ Error al conectar con MySQL en Railway:');
     console.error('❌ Detalles del error:', err.message);
+    console.error('❌ Variables de entorno:');
+    console.error('   DB_HOST:', process.env.DB_HOST);
+    console.error('   DB_USER:', process.env.DB_USER);
+    console.error('   DB_NAME:', process.env.DB_NAME);
+    console.error('   DB_PORT:', process.env.DB_PORT);
     console.error('===========================================\n');
     process.exit(1);
   });
@@ -671,8 +676,55 @@ app.delete('/rankings/:id', authenticateToken, async (req, res) => {
 });
 
 // Iniciar el servidor
-app.listen(port, '0.0.0.0', () => {
-  console.log(`\n🚀 Servidor iniciado en el puerto ${port}`);
-  console.log(`📡 URL: http://0.0.0.0:${port}`);
-  console.log('===========================================\n');
-}); 
+const startServer = async () => {
+  try {
+    console.log('\n🚀 ===========================================');
+    console.log('📡 Iniciando servidor...');
+    console.log(`🔌 Puerto: ${port}`);
+    console.log(`🌐 Entorno: ${process.env.NODE_ENV || 'development'}`);
+    console.log('===========================================\n');
+
+    // Verificar la conexión a la base de datos primero
+    const connection = await pool.getConnection();
+    console.log('\n✅ Conexión a la base de datos establecida');
+    connection.release();
+
+    // Iniciar el servidor Express
+    app.listen(port, '0.0.0.0', () => {
+      console.log('\n🚀 ===========================================');
+      console.log('📡 Servidor iniciado exitosamente');
+      console.log(`🔌 Escuchando en el puerto ${port}`);
+      console.log(`🌐 URL: http://0.0.0.0:${port}`);
+      console.log('===========================================\n');
+    });
+
+  } catch (err) {
+    console.error('\n❌ ===========================================');
+    console.error('❌ Error al iniciar el servidor:');
+    console.error('❌ Detalles del error:', err.message);
+    console.error('❌ Stack trace:', err.stack);
+    console.error('===========================================\n');
+    process.exit(1);
+  }
+};
+
+// Manejar errores no capturados
+process.on('unhandledRejection', (err) => {
+  console.error('\n❌ ===========================================');
+  console.error('❌ Error no manejado:');
+  console.error('❌ Detalles del error:', err.message);
+  console.error('❌ Stack trace:', err.stack);
+  console.error('===========================================\n');
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('\n❌ ===========================================');
+  console.error('❌ Excepción no capturada:');
+  console.error('❌ Detalles del error:', err.message);
+  console.error('❌ Stack trace:', err.stack);
+  console.error('===========================================\n');
+  process.exit(1);
+});
+
+// Iniciar el servidor
+startServer(); 
