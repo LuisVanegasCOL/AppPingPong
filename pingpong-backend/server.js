@@ -670,69 +670,9 @@ app.delete('/rankings/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Iniciar servidor
-const startServer = async () => {
-  try {
-    // Verificar la conexión a la base de datos primero
-    const connection = await pool.getConnection();
-    console.log('\n🚀 ===========================================');
-    console.log('📡 Estado de la conexión:');
-    console.log('✅ Conexión exitosa con MySQL en Railway');
-    console.log(`📊 Base de datos: ${process.env.DB_NAME}`);
-    console.log(`🌐 Host: ${process.env.DB_HOST}`);
-    console.log(`🔌 Puerto: ${process.env.DB_PORT}`);
-    console.log('===========================================\n');
-    connection.release();
-
-    // Iniciar el servidor Express
-    const server = app.listen(port, '0.0.0.0', () => {
-      const host = server.address();
-      console.log('\n🚀 ===========================================');
-      console.log('📡 Estado del servidor:');
-      console.log(`✅ Servidor corriendo en http://${host.address}:${host.port}`);
-      console.log('📝 Endpoints disponibles:');
-      console.log('   • http://localhost:8080/test');
-      console.log('   • http://localhost:8080/players');
-      console.log('   • http://localhost:8080/matches');
-      console.log('   • http://localhost:8080/torneos');
-      console.log('===========================================\n');
-    });
-
-    // Manejar errores del servidor
-    server.on('error', (error) => {
-      console.error('\n❌ ===========================================');
-      if (error.code === 'EADDRINUSE') {
-        console.error(`❌ El puerto ${port} ya está en uso`);
-      } else {
-        console.error('❌ Error en el servidor:', error.message);
-      }
-      console.error('===========================================\n');
-      process.exit(1);
-    });
-
-  } catch (err) {
-    console.error('\n❌ ===========================================');
-    console.error('❌ Error al iniciar el servidor:');
-    console.error('❌ Detalles del error:', err.message);
-    console.error('===========================================\n');
-    process.exit(1);
-  }
-};
-
-// Manejar errores no capturados
-process.on('unhandledRejection', (err) => {
-  console.error('\n❌ ===========================================');
-  console.error('❌ Error no manejado:');
-  console.error('❌ Detalles del error:', err.message);
-  console.error('===========================================\n');
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('\n❌ ===========================================');
-  console.error('❌ Excepción no capturada:');
-  console.error('❌ Detalles del error:', err.message);
-  console.error('===========================================\n');
-});
-
 // Iniciar el servidor
-startServer(); 
+app.listen(port, () => {
+  console.log(`\n🚀 Servidor iniciado en el puerto ${port}`);
+  console.log(`📡 URL: http://localhost:${port}`);
+  console.log('===========================================\n');
+}); 
