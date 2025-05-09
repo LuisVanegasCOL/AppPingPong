@@ -2,6 +2,8 @@
 
 Aplicación web para la gestión de torneos y partidos de ping pong.
 
+![Demo de la Aplicación](assets/Animation.gif)
+
 Desarrollado por Luis Vanegas © 2025
 
 ## 👨‍💻 Sobre el Desarrollador
